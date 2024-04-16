@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inicio de Sesión</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        img {
+            display: block;
+            margin: 0 auto;
+            width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        input[type=email], input[type=password] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #5cb85c;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" id="logo"  width="300">
+        <h1>Inicio de Sesión</h1>
+
+        <input type="email" id="email" name="email" placeholder="Correo electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña">
+        <button onclick="iniciarSesion()">Iniciar Sesión</button>
+    </div>
+    <script>
+        async function iniciarSesion() {
+            try {
+                const emailInput = document.getElementById('email').value;
+                const passwordInput = document.getElementById('password').value;
+                const formData = new FormData();
+                formData.append('email', emailInput);
+                formData.append('password', passwordInput);
+
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.resultado === 'Coincide') {
+                    // Si la coincidencia es exitosa, redirige a la página de votación
+                    window.location.href = '/votacion';
+                } else {
+                    // Si la coincidencia falla, muestra un mensaje de error
+                    alert('Inicio de sesión fallido: Correo o contraseña incorrectos.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

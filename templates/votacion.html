@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votaciones: Proceso Administrativo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fdfdfd;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        #titulo {
+            text-align: center;
+            margin: 20px 0;
+            color: #ff9800;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px #aaa;
+        }
+        .bienvenida {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #ff9800;
+            color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            animation: fadeIn 2s ease;
+        }
+        #grupos {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        .grupo {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            width: calc(33.333% - 40px);
+            text-align: center;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .grupo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .grupo:not(:hover) {
+            transform: scale(1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .grupo h2 {
+            color: #555;
+            margin-bottom: 15px;
+            z-index: 1;
+            position: relative;
+        }
+        .info {
+            margin-top: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+            display: none;
+            position: absolute;
+            width: 100%;
+            top: 100%;
+            left: 0;
+            transition: all 0.5s ease;
+        }
+        .grupo:hover .info {
+            display: block;
+            animation: slideIn 0.5s ease forwards;
+        }
+        .votar {
+            margin-top: 20px;
+            cursor: pointer;
+            color: #fff;
+            background-color: #4caf50;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+        .votar:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;
+            width: auto;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #abrirVotacion, #cerrarVotacion, #reiniciarVotaciones {
+            background-color: #ff9800;
+            color: #fff;
+            text-shadow: 1px 1px 2px #aaa;
+        }
+        #abrirVotacion:hover, #cerrarVotacion:hover, #reiniciarVotaciones:hover {
+            background-color: #e68900;
+        }
+        #resultadoVotacion, #recuentoVotos {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: none;
+        }
+        #recuentoVotosContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Columnas automáticas con un mínimo de 150px */
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .grupoVoto {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px; /* Agregamos un margen inferior para separar los grupos */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .grupoVoto p {
+            margin: 0; /* Eliminamos el margen interno del párrafo */
+            font-size: 16px; /* Ajustamos el tamaño de fuente */
+            color: #555; /* Color de texto menos llamativo */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1 id="titulo">Votaciones: Proceso Administrativo</h1>
+    <div class="bienvenida"><p>Hola {{ session.get('nombre', 'Invitado') }}!</p></div>
+    <div id="grupos">
+        <div class="grupo">
+            <h2>Grupo 1</h2>
+            <button class="votar" data-grupo="1" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Grupo 2</h2>
+            <button class="votar" data-grupo="2" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Grupo 3</h2>
+            <button class="votar" data-grupo="3" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Grupo 4</h2>
+            <button class="votar" data-grupo="4" disabled>Votar</button>
+        </div>
+    </div>
+    <div id="resultadoVotacion" style="display: none;"></div>
+    {% if session.get('es_admin', False) %}
+        <button id="abrirVotacion">Abrir Votación</button>
+        <button id="cerrarVotacion" style="display: none;">Cerrar Votación</button>
+        <button id="reiniciarVotaciones" style="display: none;">Reiniciar Votaciones</button>
+        <div id="recuentoVotos" style="display: none;">
+            <h3>Recuento de Votos:</h3>
+            <div id="recuentoVotosContainer"></div>
+        </div>
+    {% endif %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const socket = io();
+
+            // Definir la función toggleVotingButtons
+            function toggleVotingButtons(enable) {
+                document.querySelectorAll('.votar').forEach(button => button.disabled = !enable);
+            }
+
+            // Manejar actualizaciones de recuento de votos en tiempo real
+            socket.on('recuento_votos', data => {
+                actualizarRecuentoVotos(data.recuento_votos);
+            });
+
+            // Manejar mensajes de resultado de votación en tiempo real
+            socket.on('votacion_cerrada', data => {
+                toggleVotingButtons(false); // Deshabilitar botones de votar
+                document.getElementById('resultadoVotacion').innerText = data.resultado;
+                document.getElementById('resultadoVotacion').style.display = 'block';
+                // Actualizar otros elementos de la interfaz de usuario según sea necesario
+            });
+
+            // Seleccionar todos los botones de votar
+            const votarButtons = document.querySelectorAll('.votar');
+
+            // Función para manejar el clic en el botón de votar
+            function handleVoting(event) {
+                const grupoId = parseInt(event.target.getAttribute('data-grupo')); // Convertir a entero
+                fetch('/votar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 'grupo': grupoId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.resultado);
+                    // Aquí puedes actualizar la interfaz de usuario con el resultado
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            // Añadir el evento de clic a cada botón de votar
+            votarButtons.forEach(button => {
+                button.addEventListener('click', handleVoting);
+            });
+
+            // Actualizar y mostrar el recuento de votos
+            function actualizarRecuentoVotos(recuentoVotos) {
+                const recuentoVotosDiv = document.getElementById('recuentoVotos');
+                if (recuentoVotos && typeof recuentoVotos === 'object') {
+                    recuentoVotosDiv.innerHTML = '<h3>Recuento de Votos:</h3>';
+                    for (const [grupo, votos] of Object.entries(recuentoVotos)) {
+                        recuentoVotosDiv.innerHTML += `<p>Grupo ${grupo}: ${votos} votos</p>`;
+                    }
+                    recuentoVotosDiv.style.display = 'block'; // Mostrar el recuento de votos
+                } else {
+                    console.error('El recuento de votos no está definido correctamente:', recuentoVotos);
+                }
+            }
+
+            // Manejar la apertura de votación
+            document.getElementById('abrirVotacion').addEventListener('click', event => {
+                fetch('/abrir_votacion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    toggleVotingButtons(true); // Habilitar los botones de votar
+                    document.getElementById('abrirVotacion').style.display = 'none';
+                    document.getElementById('cerrarVotacion').style.display = 'block';
+                    document.getElementById('reiniciarVotaciones').style.display = 'none';
+                    actualizarRecuentoVotos(data.recuento_votos); // Actualizar y mostrar recuento de votos
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            // Manejar el cierre de votación
+            document.getElementById('cerrarVotacion').addEventListener('click', event => {
+                fetch('/cerrar_votacion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    toggleVotingButtons(false); // Deshabilitar los botones de votar
+                    document.getElementById('resultadoVotacion').innerText = data.resultado;
+                    document.getElementById('resultadoVotacion').style.display = 'block';
+                    document.getElementById('abrirVotacion').style.display = 'none';
+                    document.getElementById('cerrarVotacion').style.display = 'none';
+                    document.getElementById('reiniciarVotaciones').style.display = 'block';
+                    actualizarRecuentoVotos(data.recuento_votos); // Actualizar y mostrar recuento de votos al cerrar la votación
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            // Manejar el reinicio de votaciones
+            document.getElementById('reiniciarVotaciones').addEventListener('click', event => {
+                fetch('/reiniciar_votaciones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    document.getElementById('abrirVotacion').style.display = 'block';
+                    document.getElementById('cerrarVotacion').style.display = 'none';
+                    document.getElementById('reiniciarVotaciones').style.display = 'none';
+                    document.getElementById('resultadoVotacion').style.display = 'none';
+                    const recuentoVotosDiv = document.getElementById('recuentoVotos');
+                    recuentoVotosDiv.style.display = 'none'; // Ocultar el recuento de votos
+                    recuentoVotosDiv.innerHTML = ''; // Limpiar el recuento de votos
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    </script>                  
+</body>
+</html>
