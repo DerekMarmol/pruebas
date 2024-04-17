@@ -113,34 +113,37 @@ def votar():
     # Obtener el grupo por el que se está votando desde la solicitud
     grupo_votado = int(request.get_json()['grupo'])
 
-    # Obtener el token del usuario actual
+    # Obtener el correo electrónico y el token del usuario actual
+    correo_usuario = session.get('correo', None)
     token_usuario = session.get('token', None)
 
-    # Verificar si el usuario está autenticado y tiene un token único válido
-    if token_usuario is None:
+    # Verificar si el usuario está autenticado y tiene un correo electrónico y token válidos
+    if correo_usuario is None or token_usuario is None:
         return jsonify({'resultado': 'Usuario no autenticado'})
 
+    # Crear una clave única para el usuario (correo + token)
+    clave_usuario = (correo_usuario, token_usuario)
+
     # Verificar si el usuario ya ha votado antes
-    if token_usuario in usuarios_votaron:
+    if clave_usuario in usuarios_votaron:
         return jsonify({'resultado': 'Ya has votado anteriormente'})
 
     # Registrar que el usuario ha votado
-    usuarios_votaron[token_usuario] = grupo_votado
+    usuarios_votaron[clave_usuario] = grupo_votado
 
     # Actualizar la columna voto en el archivo Excel para el usuario actual y el grupo votado
-    usuarios_df.loc[usuarios_df['token'] == token_usuario, 'voto'] = grupo_votado
+    usuarios_df.loc[(usuarios_df['correo'] == correo_usuario) & (usuarios_df['token'] == token_usuario), 'voto'] = grupo_votado
     usuarios_df.to_excel('base.xlsx', index=False)
 
     # Incrementar el conteo de votos para el grupo votado
     votos[str(grupo_votado)] += 1  # Convertir grupo_votado a una cadena aquí
 
-    logging.info(f'Usuario con token {token_usuario} votó por el grupo {grupo_votado}. Votos actuales: {votos}')
+    logging.info(f'Usuario con correo {correo_usuario} y token {token_usuario} votó por el grupo {grupo_votado}. Votos actuales: {votos}')
 
     # Emitir un mensaje WebSocket informando sobre el voto realizado
-    socketio.emit('voto_registrado', {'usuario': token_usuario, 'grupo_votado': grupo_votado})
+    socketio.emit('voto_registrado', {'usuario': clave_usuario, 'grupo_votado': grupo_votado})
 
     return jsonify({'resultado': 'Voto registrado correctamente'})
-
 
 @app.route('/cerrar_votacion', methods=['POST'])
 def cerrar_votacion():
@@ -161,8 +164,7 @@ def cerrar_votacion():
 
 @app.route('/reiniciar_votaciones', methods=['POST'])
 def reiniciar_votaciones():
-    global usuarios_votaron
-    usuarios_votaron = set()
+    usuarios_votaron.clear()  # Limpiar el diccionario de usuarios que votaron
     reiniciar_votos()
     socketio.emit('votaciones_reiniciadas', {})
     return jsonify({'resultado': 'Votaciones reiniciadas correctamente'})

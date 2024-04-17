@@ -1,70 +1,77 @@
-let votacionAbierta = false;
+@app.route('/login', methods=['POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        
+        # Verificar correo electrónico y contraseña
+        usuario = usuarios_df[(usuarios_df['correo'] == email) & (usuarios_df['contraseña'] == password)]
+        if usuario.empty:
+            return jsonify({'resultado': 'Correo o contraseña incorrectos'})
 
-function toggleVotingButtons(enable) {
-    const votarButtons = document.querySelectorAll('.votar');
-    if (votarButtons) {
-        votarButtons.forEach(button => {
-            button.disabled = !enable;
-        });
-    }
-}
+        # Verificar si el usuario es administrador
+        es_admin = usuario.iloc[0]['es_admin']
+        session['es_admin'] = bool(es_admin)
 
-// Manejar actualizaciones de recuento de votos en tiempo real
-socket.on('recuento_votos', data => {
-    votacionAbierta = true;
-    actualizarRecuentoVotos(data.recuento_votos);
-    toggleVotingButtons(true); // Habilitar botones de votar para todos los usuarios
-});
+        # Almacenar más información del usuario en la sesión
+        session['nombre'] = usuario.iloc[0]['nombre']
+        session['correo'] = email
+        
+        # Generar un token único para la sesión y almacenarlo en el dataframe
+        token = secrets.token_hex(16)
+        session['token'] = token
+        usuarios_df.at[usuario.index[0], 'token'] = token
+        
+        # Guardar el dataframe actualizado en el archivo Excel
+        usuarios_df.to_excel('base.xlsx', index=False)
+        
+        return jsonify({'resultado': 'Inicio de sesión exitoso', 'token': token})
 
-// Manejar mensajes de votación cerrada en tiempo real
-socket.on('votacion_cerrada', data => {
-    votacionAbierta = false;
-    toggleVotingButtons(false); // Deshabilitar botones de votar para todos los usuarios
-    const resultadoVotacionDiv = document.getElementById('resultadoVotacion');
-    if (resultadoVotacionDiv) {
-        resultadoVotacionDiv.innerText = data.resultado;
-        resultadoVotacionDiv.style.display = 'block';
-    }
-    // Actualizar otros elementos de la interfaz de usuario según sea necesario
-});
+    return jsonify({'resultado': 'Error en la solicitud'})
 
-// Manejar evento de votaciones reiniciadas
-socket.on('votaciones_reiniciadas', () => {
-    votacionAbierta = false;
-    toggleVotingButtons(false); // Deshabilitar botones de votar para todos los usuarios
-    const resultadoVotacionDiv = document.getElementById('resultadoVotacion');
-    if (resultadoVotacionDiv) {
-        resultadoVotacionDiv.style.display = 'none';
-    }
-    const recuentoVotosDiv = document.getElementById('recuentoVotos');
-    if (recuentoVotosDiv) {
-        recuentoVotosDiv.style.display = 'none';
-        recuentoVotosDiv.innerHTML = ''; // Limpiar el recuento de votos
-    }
-});
+@app.route('/votar', methods=['POST'])
+def votar():
+    # Obtener el grupo por el que se está votando desde la solicitud
+    grupo_votado = int(request.get_json()['grupo'])
 
-// Función para manejar el clic en el botón de votar
-function handleVoting(event) {
-    const grupoId = parseInt(event.target.getAttribute('data-grupo')); // Convertir a entero
-    fetch('/votar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 'grupo': grupoId })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.resultado);
-        // Aquí puedes actualizar la interfaz de usuario con el resultado
-    })
-    .catch(error => console.error('Error:', error));
-}
+    # Obtener el token del usuario actual
+    token_usuario = session.get('token', None)
 
-// Añadir el evento de clic a cada botón de votar
-const votarButtons = document.querySelectorAll('.votar');
-if (votarButtons) {
-    votarButtons.forEach(button => {
-        button.addEventListener('click', handleVoting);
-    });
-}
+    # Verificar si el usuario está autenticado y tiene un token único válido
+    if token_usuario is None:
+        return jsonify({'resultado': 'Usuario no autenticado'})
+
+    # Verificar si el usuario ya ha votado antes
+    if token_usuario in usuarios_votaron:
+        return jsonify({'resultado': 'Ya has votado anteriormente'})
+
+    # Registrar que el usuario ha votado
+    usuarios_votaron[token_usuario] = grupo_votado
+
+    # Actualizar la columna voto en el archivo Excel para el usuario actual y el grupo votado
+    usuarios_df.loc[usuarios_df['token'] == token_usuario, 'voto'] = grupo_votado
+    usuarios_df.to_excel('base.xlsx', index=False)
+
+    # Incrementar el conteo de votos para el grupo votado
+    votos[str(grupo_votado)] += 1  # Convertir grupo_votado a una cadena aquí
+
+    logging.info(f'Usuario con token {token_usuario} votó por el grupo {grupo_votado}. Votos actuales: {votos}')
+
+    # Emitir un mensaje WebSocket informando sobre el voto realizado
+    socketio.emit('voto_registrado', {'usuario': token_usuario, 'grupo_votado': grupo_votado})
+
+    return jsonify({'resultado': 'Voto registrado correctamente'})@app.route('/reiniciar_votaciones', methods=['POST'])
+    
+def reiniciar_votaciones():
+    global usuarios_votaron
+    usuarios_votaron = {}  # Usar un diccionario en lugar de un conjunto
+
+    # Reiniciar la información de votación para todos los usuarios en el dataframe
+    usuarios_df['voto'] = None
+    usuarios_df.to_excel('base.xlsx', index=False)
+
+    # Emitir un mensaje WebSocket informando sobre la reinicialización de votaciones
+    socketio.emit('votaciones_reiniciadas', {})
+
+    return jsonify({'resultado': 'Votaciones reiniciadas correctamente'})
+
