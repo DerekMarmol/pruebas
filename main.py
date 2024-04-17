@@ -106,40 +106,41 @@ def abrir_votacion():
 logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
 # Diccionario para rastrear qué usuarios han votado
-usuarios_votaron = set()
+usuarios_votaron = {}
 
 @app.route('/votar', methods=['POST'])
 def votar():
     # Obtener el grupo por el que se está votando desde la solicitud
     grupo_votado = int(request.get_json()['grupo'])
 
-    # Obtener el correo del usuario actual
-    correo_usuario = session.get('correo', None)
+    # Obtener el token del usuario actual
+    token_usuario = session.get('token', None)
 
-    # Verificar si el usuario está autenticado y tiene un correo electrónico válido
-    if correo_usuario is None:
+    # Verificar si el usuario está autenticado y tiene un token único válido
+    if token_usuario is None:
         return jsonify({'resultado': 'Usuario no autenticado'})
 
     # Verificar si el usuario ya ha votado antes
-    if correo_usuario in usuarios_votaron:
+    if token_usuario in usuarios_votaron:
         return jsonify({'resultado': 'Ya has votado anteriormente'})
 
     # Registrar que el usuario ha votado
-    usuarios_votaron.add(correo_usuario)
+    usuarios_votaron[token_usuario] = grupo_votado
 
     # Actualizar la columna voto en el archivo Excel para el usuario actual y el grupo votado
-    usuarios_df.loc[usuarios_df['correo'] == correo_usuario, 'voto'] = grupo_votado
+    usuarios_df.loc[usuarios_df['token'] == token_usuario, 'voto'] = grupo_votado
     usuarios_df.to_excel('base.xlsx', index=False)
 
     # Incrementar el conteo de votos para el grupo votado
     votos[str(grupo_votado)] += 1  # Convertir grupo_votado a una cadena aquí
 
-    logging.info(f'Usuario {correo_usuario} votó por el grupo {grupo_votado}. Votos actuales: {votos}')
+    logging.info(f'Usuario con token {token_usuario} votó por el grupo {grupo_votado}. Votos actuales: {votos}')
 
     # Emitir un mensaje WebSocket informando sobre el voto realizado
-    socketio.emit('voto_registrado', {'usuario': correo_usuario, 'grupo_votado': grupo_votado})
+    socketio.emit('voto_registrado', {'usuario': token_usuario, 'grupo_votado': grupo_votado})
 
     return jsonify({'resultado': 'Voto registrado correctamente'})
+
 
 @app.route('/cerrar_votacion', methods=['POST'])
 def cerrar_votacion():
