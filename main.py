@@ -80,12 +80,12 @@ def votacion():
     return render_template('votacion.html')
 
 # Inicializar el contador de votos
-votos = {str(i): 0 for i in range(1, 31)}
+votos = {str(i): 0 for i in range(1, 32)}
 
 # Función para reiniciar los votos
 def reiniciar_votos():
     global votos
-    votos = {str(i): 0 for i in range(1, 31)}  # Inicializar votos para 30 grupos
+    votos = {str(i): 0 for i in range(1, 32)}  # Inicializar votos para 30 grupos
     usuarios_df['voto'] = np.nan  # Reiniciar la columna 'voto' en el DataFrame
 
 # Bandera para controlar si la votación está abierta o no
@@ -154,9 +154,9 @@ def cerrar_votacion():
     # Si hay un solo grupo ganador, retornar ese grupo
     if len(grupos_ganadores) == 1:
         grupo_ganador = grupos_ganadores[0]
-        resultado = f'Grupo ganador: {grupo_ganador}'
+        resultado = f'Particinpante ganador: {grupo_ganador}'
     else:
-        resultado = f'Empate entre los grupos {", ".join(str(grupo) for grupo in grupos_ganadores)}'
+        resultado = f'Empate entre los participantes {", ".join(str(grupo) for grupo in grupos_ganadores)}'
     
     socketio.emit('votacion_cerrada', {'resultado': resultado})
     enviar_recuento_votos()  # Envía el recuento de votos cuando se cierra la votación

@@ -1,77 +1,126 @@
-@app.route('/login', methods=['POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        
-        # Verificar correo electrónico y contraseña
-        usuario = usuarios_df[(usuarios_df['correo'] == email) & (usuarios_df['contraseña'] == password)]
-        if usuario.empty:
-            return jsonify({'resultado': 'Correo o contraseña incorrectos'})
-
-        # Verificar si el usuario es administrador
-        es_admin = usuario.iloc[0]['es_admin']
-        session['es_admin'] = bool(es_admin)
-
-        # Almacenar más información del usuario en la sesión
-        session['nombre'] = usuario.iloc[0]['nombre']
-        session['correo'] = email
-        
-        # Generar un token único para la sesión y almacenarlo en el dataframe
-        token = secrets.token_hex(16)
-        session['token'] = token
-        usuarios_df.at[usuario.index[0], 'token'] = token
-        
-        # Guardar el dataframe actualizado en el archivo Excel
-        usuarios_df.to_excel('base.xlsx', index=False)
-        
-        return jsonify({'resultado': 'Inicio de sesión exitoso', 'token': token})
-
-    return jsonify({'resultado': 'Error en la solicitud'})
-
-@app.route('/votar', methods=['POST'])
-def votar():
-    # Obtener el grupo por el que se está votando desde la solicitud
-    grupo_votado = int(request.get_json()['grupo'])
-
-    # Obtener el token del usuario actual
-    token_usuario = session.get('token', None)
-
-    # Verificar si el usuario está autenticado y tiene un token único válido
-    if token_usuario is None:
-        return jsonify({'resultado': 'Usuario no autenticado'})
-
-    # Verificar si el usuario ya ha votado antes
-    if token_usuario in usuarios_votaron:
-        return jsonify({'resultado': 'Ya has votado anteriormente'})
-
-    # Registrar que el usuario ha votado
-    usuarios_votaron[token_usuario] = grupo_votado
-
-    # Actualizar la columna voto en el archivo Excel para el usuario actual y el grupo votado
-    usuarios_df.loc[usuarios_df['token'] == token_usuario, 'voto'] = grupo_votado
-    usuarios_df.to_excel('base.xlsx', index=False)
-
-    # Incrementar el conteo de votos para el grupo votado
-    votos[str(grupo_votado)] += 1  # Convertir grupo_votado a una cadena aquí
-
-    logging.info(f'Usuario con token {token_usuario} votó por el grupo {grupo_votado}. Votos actuales: {votos}')
-
-    # Emitir un mensaje WebSocket informando sobre el voto realizado
-    socketio.emit('voto_registrado', {'usuario': token_usuario, 'grupo_votado': grupo_votado})
-
-    return jsonify({'resultado': 'Voto registrado correctamente'})@app.route('/reiniciar_votaciones', methods=['POST'])
-    
-def reiniciar_votaciones():
-    global usuarios_votaron
-    usuarios_votaron = {}  # Usar un diccionario en lugar de un conjunto
-
-    # Reiniciar la información de votación para todos los usuarios en el dataframe
-    usuarios_df['voto'] = None
-    usuarios_df.to_excel('base.xlsx', index=False)
-
-    # Emitir un mensaje WebSocket informando sobre la reinicialización de votaciones
-    socketio.emit('votaciones_reiniciadas', {})
-
-    return jsonify({'resultado': 'Votaciones reiniciadas correctamente'})
-
+<div id="grupos">
+        <div class="grupo">
+            <h2>Derek Leonel Marmol Salguero</h2>
+            <button class="votar" data-grupo="1" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Ludin Eduardo Carranza Guerra</h2>
+            <button class="votar" data-grupo="2" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Edgar Roberto Quiñonez Herrera</h2>
+            <button class="votar" data-grupo="3" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Leonel Estuardo Lémus Martínez</h2>
+            <button class="votar" data-grupo="4" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>María José del Carmen Portillo López</h2>
+            <button class="votar" data-grupo="5" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Fernando José Carranza Cabrera</h2>
+            <button class="votar" data-grupo="6" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Astrid Mileidy Peña Polanco</h2>
+            <button class="votar" data-grupo="7" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Ángel Alexander López Martínez</h2>
+            <button class="votar" data-grupo="8" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Allan Enrique Recinos Castillo</h2>
+            <button class="votar" data-grupo="9" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Luis Gustavo Ramírez Berganza</h2>
+            <button class="votar" data-grupo="10" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Diego Alexander Contreras Duarte</h2>
+            <button class="votar" data-grupo="11" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Ana Laura de María Oliva Cruz</h2>
+            <button class="votar" data-grupo="12" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Brandon Fabián Morales Méléndez</h2>
+            <button class="votar" data-grupo="13" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Yeferson Yosmar Tobar Lémus</h2>
+            <button class="votar" data-grupo="14" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Delmy María Fajardo Borrayo</h2>
+            <button class="votar" data-grupo="15" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Cristian Eduardo Chamo Morales</h2>
+            <button class="votar" data-grupo="16" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Kevin Josué Orellana Arbizú</h2>
+            <button class="votar" data-grupo="17" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Marvin Jaffet Gudiel López</h2>
+            <button class="votar" data-grupo="18" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Alba Cristina Nájera Marroquín</h2>
+            <button class="votar" data-grupo="19" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Daniel Alexander Ortiz Cabrera</h2>
+            <button class="votar" data-grupo="20" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Andreina Jannin Ulloa Téllez</h2>
+            <button class="votar" data-grupo="21" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Christian Eduardo López Lémus</h2>
+            <button class="votar" data-grupo="22" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>José Alberto Caal Cristales</h2>
+            <button class="votar" data-grupo="23" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Jorge Danilo Ucelo Román</h2>
+            <button class="votar" data-grupo="24" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Maddison Gabriela Sermeño Rivas</h2>
+            <button class="votar" data-grupo="25" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Sinthia Celeste Orellana Galeano</h2>
+            <button class="votar" data-grupo="26" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Aura Lucía Sandoval Pivaral</h2>
+            <button class="votar" data-grupo="27" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Keily Atalia López Hernández</h2>
+            <button class="votar" data-grupo="28" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Fredy Aníbal Cardona Montenegro</h2>
+            <button class="votar" data-grupo="29" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Julio Alejandro Pineda Duque</h2>
+            <button class="votar" data-grupo="30" disabled>Votar</button>
+        </div>
+        <div class="grupo">
+            <h2>Patrick Alexander Salguero Solares</h2>
+            <button class="votar" data-grupo="31" disabled>Votar</button>
+        </div>
+    </div>

@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #fdfdfd;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
             color: #333;
@@ -15,15 +15,15 @@
         #titulo {
             text-align: center;
             margin: 20px 0;
-            color: #ff9800;
+            color: #2c3e50;
             font-size: 2.5em;
-            text-shadow: 2px 2px 4px #aaa;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
         .bienvenida {
             text-align: center;
             margin: 10px 0;
             padding: 10px;
-            background-color: #ff9800;
+            background-color: #2c3e50;
             color: #fff;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -57,7 +57,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .grupo h2 {
-            color: #555;
+            color: #2c3e50;
             margin-bottom: 15px;
             z-index: 1;
             position: relative;
@@ -83,7 +83,7 @@
             margin-top: 20px;
             cursor: pointer;
             color: #fff;
-            background-color: #4caf50;
+            background-color: #2c3e50;
             border: none;
             border-radius: 5px;
             padding: 10px 20px;
@@ -92,6 +92,9 @@
             width: 100%;
             box-sizing: border-box;
             z-index: 1;
+        }
+        .votar:hover {
+            background-color: #1a252f;
         }
         .votar:disabled {
             background-color: #ccc;
@@ -111,12 +114,12 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         #abrirVotacion, #cerrarVotacion, #reiniciarVotaciones {
-            background-color: #ff9800;
+            background-color: #2c3e50;
             color: #fff;
-            text-shadow: 1px 1px 2px #aaa;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
         }
         #abrirVotacion:hover, #cerrarVotacion:hover, #reiniciarVotaciones:hover {
-            background-color: #e68900;
+            background-color: #1a252f;
         }
         #resultadoVotacion, #recuentoVotos {
             margin-top: 20px;
@@ -131,7 +134,7 @@
         }
         #recuentoVotosContainer {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Columnas automáticas con un mínimo de 150px */
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
             margin-top: 10px;
         }
@@ -140,13 +143,46 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             padding: 10px;
-            margin-bottom: 10px; /* Agregamos un margen inferior para separar los grupos */
+            margin-bottom: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .grupoVoto p {
-            margin: 0; /* Eliminamos el margen interno del párrafo */
-            font-size: 16px; /* Ajustamos el tamaño de fuente */
-            color: #555; /* Color de texto menos llamativo */
+            margin: 0;
+            font-size: 16px;
+            color: #555;
+        }
+        #grupos-container {
+            height: 500px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+        .grupo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+            box-sizing: border-box;
+            padding-bottom: 10px;
+        }
+        .votar {
+            margin-top: auto;
+        }
+        #grupos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: none;
+            margin: 0;
+        }
+        .grupo {
+            flex: 0 0 calc(25% - 20px);
+            margin: 10px;
+            display: block;
+            white-space: normal;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -161,22 +197,132 @@
 <body>
     <h1 id="titulo">Votaciones: Proceso Administrativo</h1>
     <div class="bienvenida"><p>Hola {{ session.get('nombre', 'Invitado') }}!</p></div>
-    <div id="grupos">
-        <div class="grupo">
-            <h2>Grupo 1</h2>
-            <button class="votar" data-grupo="1" disabled>Votar</button>
-        </div>
-        <div class="grupo">
-            <h2>Grupo 2</h2>
-            <button class="votar" data-grupo="2" disabled>Votar</button>
-        </div>
-        <div class="grupo">
-            <h2>Grupo 3</h2>
-            <button class="votar" data-grupo="3" disabled>Votar</button>
-        </div>
-        <div class="grupo">
-            <h2>Grupo 4</h2>
-            <button class="votar" data-grupo="4" disabled>Votar</button>
+    <div id="grupos-container">
+        <div id="grupos">
+            <div class="grupo">
+                <h2>No.1 Derek Leonel Marmol Salguero</h2>
+                <button class="votar" data-grupo="1" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.2 Ludin Eduardo Carranza Guerra</h2>
+                <button class="votar" data-grupo="2" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.3 Edgar Roberto Quiñonez Herrera</h2>
+                <button class="votar" data-grupo="3" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.4 Leonel Estuardo Lémus Martínez</h2>
+                <button class="votar" data-grupo="4" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.5 María José del Carmen Portillo López</h2>
+                <button class="votar" data-grupo="5" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.6 Fernando José Carranza Cabrera</h2>
+                <button class="votar" data-grupo="6" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.7 Astrid Mileidy Peña Polanco</h2>
+                <button class="votar" data-grupo="7" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.8 Ángel Alexander López Martínez</h2>
+                <button class="votar" data-grupo="8" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.9 Allan Enrique Recinos Castillo</h2>
+                <button class="votar" data-grupo="9" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.10 Luis Gustavo Ramírez Berganza</h2>
+                <button class="votar" data-grupo="10" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.11 Diego Alexander Contreras Duarte</h2>
+                <button class="votar" data-grupo="11" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.12 Ana Laura de María Oliva Cruz</h2>
+                <button class="votar" data-grupo="12" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.13 Brandon Fabián Morales Méléndez</h2>
+                <button class="votar" data-grupo="13" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.14 Yeferson Yosmar Tobar Lémus</h2>
+                <button class="votar" data-grupo="14" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.15 Delmy María Fajardo Borrayo</h2>
+                <button class="votar" data-grupo="15" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.16 Cristian Eduardo Chamo Morales</h2>
+                <button class="votar" data-grupo="16" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.17 Kevin Josué Orellana Arbizú</h2>
+                <button class="votar" data-grupo="17" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.18 Marvin Jaffet Gudiel López</h2>
+                <button class="votar" data-grupo="18" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.19 Alba Cristina Nájera Marroquín</h2>
+                <button class="votar" data-grupo="19" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.20 Daniel Alexander Ortiz Cabrera</h2>
+                <button class="votar" data-grupo="20" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.21 Andreina Jannin Ulloa Téllez</h2>
+                <button class="votar" data-grupo="21" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.22 Christian Eduardo López Lémus</h2>
+                <button class="votar" data-grupo="22" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.23 José Alberto Caal Cristales</h2>
+                <button class="votar" data-grupo="23" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.24 Jorge Danilo Ucelo Román</h2>
+                <button class="votar" data-grupo="24" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.25 Maddison Gabriela Sermeño Rivas</h2>
+                <button class="votar" data-grupo="25" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.26 Sinthia Celeste Orellana Galeano</h2>
+                <button class="votar" data-grupo="26" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.27 Aura Lucía Sandoval Pivaral</h2>
+                <button class="votar" data-grupo="27" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.28 Keily Atalia López Hernández</h2>
+                <button class="votar" data-grupo="28" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.29 Fredy Aníbal Cardona Montenegro</h2>
+                <button class="votar" data-grupo="29" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.30 Julio Alejandro Pineda Duque</h2>
+                <button class="votar" data-grupo="30" disabled>Votar</button>
+            </div>
+            <div class="grupo">
+                <h2>No.31 Patrick Alexander Salguero Solares</h2>
+                <button class="votar" data-grupo="31" disabled>Votar</button>
+            </div>            
         </div>
     </div>
     <div id="resultadoVotacion" style="display: none;"></div>
