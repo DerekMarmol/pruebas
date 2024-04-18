@@ -153,7 +153,7 @@ def cerrar_votacion():
     # Si hay un solo grupo ganador, retornar ese grupo
     if len(grupos_ganadores) == 1:
         grupo_ganador = grupos_ganadores[0]
-        resultado = f'Particinpante ganador: {grupo_ganador}'
+        resultado = f'Participante ganador: No.{grupo_ganador}'
     else:
         resultado = f'Empate entre los participantes {", ".join(str(grupo) for grupo in grupos_ganadores)}'
     
