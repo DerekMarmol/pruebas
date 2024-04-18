@@ -5,7 +5,6 @@ import secrets
 import logging
 from flask_socketio import SocketIO, emit
 import os
-from json import JSONEncoder
 
 static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
 
@@ -27,15 +26,6 @@ def index():
     return render_template('index.html', es_admin=session.get('es_admin', False))
 
 usuarios_df = pd.read_excel('base.xlsx')
-usuarios_df['es_admin'] = usuarios_df['es_admin'].astype(bool)
-
-class NumpyJSONEncoder(JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.bool_):
-            return bool(obj)
-        return super().default(obj)
-
-app.json_encoder = NumpyJSONEncoder
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -106,11 +96,10 @@ def enviar_recuento_votos():
 
 @app.route('/abrir_votacion', methods=['POST'])
 def abrir_votacion():
-    reiniciar_votos()
-    enviar_recuento_votos()
-    socketio.emit('votacion_abierta', {'abierta': True})
     global votacion_abierta
     votacion_abierta = True
+    reiniciar_votos()
+    enviar_recuento_votos()  # Envía el recuento de votos cuando se abre la votación
     return jsonify({'resultado': 'Votación abierta'})
 
 logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
@@ -164,18 +153,19 @@ def cerrar_votacion():
     # Si hay un solo grupo ganador, retornar ese grupo
     if len(grupos_ganadores) == 1:
         grupo_ganador = grupos_ganadores[0]
-        resultado = f'Participante ganador: {grupo_ganador}'
+        resultado = f'Particinpante ganador: {grupo_ganador}'
     else:
         resultado = f'Empate entre los participantes {", ".join(str(grupo) for grupo in grupos_ganadores)}'
     
-    socketio.emit('votacion_cerrada', {'cerrada': True, 'resultado': resultado, 'recuento_votos': votos})
+    socketio.emit('votacion_cerrada', {'resultado': resultado})
+    enviar_recuento_votos()  # Envía el recuento de votos cuando se cierra la votación
     return jsonify({'resultado': resultado})
 
 @app.route('/reiniciar_votaciones', methods=['POST'])
 def reiniciar_votaciones():
-    usuarios_votaron.clear()
+    usuarios_votaron.clear()  # Limpiar el diccionario de usuarios que votaron
     reiniciar_votos()
-    socketio.emit('votaciones_reiniciadas', {'reiniciadas': True})
+    socketio.emit('votaciones_reiniciadas', {})
     return jsonify({'resultado': 'Votaciones reiniciadas correctamente'})
 
 @socketio.on('connect')
@@ -183,4 +173,4 @@ def handle_connect():
     print('Cliente conectado')
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True) 
