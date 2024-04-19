@@ -6,93 +6,125 @@
     <title>Votaciones: Proceso Administrativo</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        #titulo {
-            text-align: center;
-            margin: 20px 0;
-            color: #2c3e50;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        .bienvenida {
-            text-align: center;
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #2c3e50;
-            color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            animation: fadeIn 2s ease;
-        }
-        #grupos {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
-            gap: 20px;
-        }
-        .grupo {
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            width: calc(33.333% - 40px);
-            text-align: center;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .grupo:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .grupo:not(:hover) {
-            transform: scale(1);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .grupo h2 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            z-index: 1;
-            position: relative;
-        }
-        .info {
-            margin-top: 10px;
-            background-color: #f9f9f9;
-            border: 1px solid #eee;
-            border-radius: 5px;
-            padding: 10px;
-            display: none;
-            position: absolute;
-            width: 100%;
-            top: 100%;
-            left: 0;
-            transition: all 0.5s ease;
-        }
-        .grupo:hover .info {
-            display: block;
-            animation: slideIn 0.5s ease forwards;
-        }
-        .votar {
-            margin-top: 20px;
-            cursor: pointer;
-            color: #fff;
-            background-color: #2c3e50;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            width: 100%;
-            box-sizing: border-box;
-            z-index: 1;
-        }
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f8f8;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+
+    #titulo {
+        text-align: center;
+        margin: 40px 0;
+        color: #2c3e50;
+        font-size: 3em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .bienvenida {
+        text-align: center;
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #2c3e50;
+        color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 2s ease;
+    }
+
+    #grupos-container {
+        height: 600px;
+        overflow-y: auto;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        background-color: #fff;
+    }
+
+    .grupo {
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        width: calc(33.333% - 40px);
+        text-align: center;
+        background-color: #f8f8f8;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 200px;
+    }
+
+    .grupo:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .grupo h2 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        z-index: 1;
+        position: relative;
+        flex-grow: 1;
+    }
+
+    .votar {
+        margin-top: auto;
+        cursor: pointer;
+        color: #fff;
+        background-color: #2c3e50;
+        border: none;
+        border-radius: 5px;
+        padding: 12px 24px;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+        z-index: 1;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .votar:hover {
+        background-color: #1a252f;
+    }
+
+    button {
+        margin: 10px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        outline: none;
+        width: auto;
+        display: inline-block;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    #abrirVotacion, #cerrarVotacion, #reiniciarVotaciones {
+        background-color: #2c3e50;
+        color: #fff;
+    }
+
+    #abrirVotacion:hover, #cerrarVotacion:hover, #reiniciarVotaciones:hover {
+        background-color: #1a252f;
+    }
+
+    #resultadoVotacion, #recuentoVotos {
+        margin-top: 40px;
+        text-align: center;
+        font-size: 20px;
+        padding: 20px;
+        background-color: #fff;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
         .votar:hover {
             background-color: #1a252f;
         }
@@ -160,16 +192,19 @@
             padding: 10px;
         }
         .grupo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            height: 100%;
-            box-sizing: border-box;
-            padding-bottom: 10px;
-        }
-        .votar {
-            margin-top: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            width: calc(33.333% - 40px);
+            text-align: center;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex; /* Agregamos esta línea */
+            flex-direction: column; /* Agregamos esta línea */
+            height: 200px; /* Ajusta la altura según tus necesidades */
         }
         #grupos {
             display: flex;
@@ -177,12 +212,6 @@
             justify-content: center;
             max-width: none;
             margin: 0;
-        }
-        .grupo {
-            flex: 0 0 calc(25% - 20px);
-            margin: 10px;
-            display: block;
-            white-space: normal;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
